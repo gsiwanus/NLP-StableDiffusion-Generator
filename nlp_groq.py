@@ -1,5 +1,14 @@
 import os
 import json
+
+# NLP Dependencies Import
+import nltk
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.corpus import stopwords
+from nltk.probability import FreqDist
+from nltk.tokenize.treebank import TreebankWordDetokenizer
+
+# GROQ AI Import
 from groq import Groq
 from authtoken import groq_token, folder_path # authtoken and folder_path are unique to your API Keys and local directories
 
