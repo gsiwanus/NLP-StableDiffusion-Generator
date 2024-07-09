@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 import customtkinter as ctk
 from PIL import Image, ImageTk
-from authtoken import auth_token, folder_path
+from authtoken import auth_token, folder_path # authtoken and folder_path are unique to your API Keys and local directories
 import torch
 from diffusers import StableDiffusionPipeline
 import threading
