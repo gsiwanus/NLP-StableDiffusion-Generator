@@ -55,7 +55,7 @@ def generate():
     if filename not in key_points_dict:
         return
     key_points = key_points_dict[filename]
-    prompt_text = f"Make an infographic using the provided keypoints without including words in the image: {key_points}"
+    prompt_text = f"Create a pictograph using the provided keypoints: {key_points}"
 
     def run_generation():
         num_inference_steps = 25
