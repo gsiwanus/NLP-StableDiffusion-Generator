@@ -3,7 +3,6 @@ import json
 from groq import Groq
 from authtoken import groq_token, folder_path # authtoken and folder_path are unique to your API Keys and local directories
 
-
 # Set the Groq API key
 os.environ['GROQ_API_KEY'] = groq_token 
 # Specify the folder path
