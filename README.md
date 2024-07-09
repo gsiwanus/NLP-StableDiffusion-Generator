@@ -1,2 +1,2 @@
 # NLP-StableDiffusion-Generator
-An NLP developed to analyze research papers, to create infographics with Stable Diffusion pipeline
+Using Python NLTK and GROQ  API, I developed a NLP to summarize medical research papers, conducted with community clinical trials, to an 8th grade reading level and identify key points from the abstracts, including results, methodologies, and conclusions.  An image generation app was created leveraging Stable Diffusion’s RunwayML v1-5 model and Python TKinter to develop infographics and pictographs for accessible back-reporting to community members.
