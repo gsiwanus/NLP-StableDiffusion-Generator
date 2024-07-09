@@ -1,3 +1,6 @@
+# file containing API keys and Folder Paths (change this for each person)
+authtoken.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
