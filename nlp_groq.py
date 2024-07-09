@@ -24,14 +24,14 @@ stop_words = set(stopwords.words('english'))
 # Summarization Function
 def nltk_summarize(text):
     sentences = sent_tokenize(text)
-    words = word_tokenize(text)
-    words = [word.lower() for word in words if word.isalnum()]
+    words = []
+    for sentence in sentences:
+        words.extend(word_tokenize(sentence.lower()))
+    words = [word.lower() for word in words if word.isalnum() and word not in stop_words]
 
     freq_dist = FreqDist(words)
-    most_freq_words = freq_dist.most_common(10)
+    most_freq_words = freq_dist.most_common(50)
     summary = [word[0] for word in most_freq_words]
-
-    return ' '.join(summary)
 
 # Initialize the Groq client
 client = Groq(
