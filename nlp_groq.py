@@ -17,6 +17,11 @@ os.environ['GROQ_API_KEY'] = groq_token
 # Specify the folder path
 folder_path = folder_path
 
+# Initialize NLTK stopwords and tokenizer
+nltk.download('stopwords')
+nltk.download('punkt')
+stop_words = set(stopwords.words('english'))
+
 # Initialize the Groq client
 client = Groq(
     api_key=os.environ.get('GROQ_API_KEY'),
