@@ -6,7 +6,6 @@ import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 from nltk.probability import FreqDist
-from nltk.tokenize.treebank import TreebankWordDetokenizer
 
 # GROQ AI Import
 from groq import Groq
@@ -21,6 +20,18 @@ folder_path = folder_path
 nltk.download('stopwords')
 nltk.download('punkt')
 stop_words = set(stopwords.words('english'))
+
+# Summarization Function
+def nltk_summarize(text):
+    sentences = sent_tokenize(text)
+    words = word_tokenize(text)
+    words = [word.lower() for word in words if word.isalnum()]
+
+    freq_dist = FreqDist(words)
+    most_freq_words = freq_dist.most_common(10)
+    summary = [word[0] for word in most_freq_words]
+
+    return ' '.join(summary)
 
 # Initialize the Groq client
 client = Groq(
@@ -39,22 +50,25 @@ for filename in os.listdir(folder_path):
         with open(file_path, 'r', encoding='utf-8') as file:
             content = file.read()
 
-            # Use Groq API to summarize the content
+            # Summarize articles using NLTK NLP
+            summarized_content = nltk_summarize(content)
+
+            # Use Groq API to identify key points
             chat_completion = client.chat.completions.create(
                 messages=[
                     {
                         "role": "user",
-                        "content": f"Summarize the following text to an 8th grade level and provide a bulleted list of key points: {content}",
+                        "content": f"Create a bulleted list of key points based on the summarized content: {summarized_content}",
                     }
                 ],
                 model="llama3-8b-8192",
             )
 
             # Get the summarized content
-            summarized_content = chat_completion.choices[0].message.content
+            key_points = chat_completion.choices[0].message.content
             
             # Save the key points in the dictionary
-            key_points_dict[filename] = summarized_content
+            key_points_dict[filename] = key_points
 
 # Save the key points dictionary to a JSON file in the same directory
 json_file_path = os.path.join(folder_path, 'key_points.json')
