@@ -50,11 +50,12 @@ for filename in os.listdir(folder_path):
                 ],
                 model="llama3-8b-8192",
             )
-            # Get the summarized content
+            # Get the bulleted list of key points
             bulleted_content = chat_completion.choices[0].message.content
             
             # Save the key points in the dictionary
             key_points_dict[filename] = bulleted_content
+            
 # Save the key points dictionary to a JSON file in the same directory
 json_file_path = os.path.join(folder_path, 'key_points.json')
 with open(json_file_path, 'w', encoding='utf-8') as json_file:
