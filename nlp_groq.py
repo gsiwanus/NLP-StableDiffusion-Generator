@@ -1,11 +1,7 @@
 import os
 import json
-
-# NLP Dependencies Import
-import nltk
-from nltk.tokenize import sent_tokenize, word_tokenize
-from nltk.corpus import stopwords
-from nltk.probability import FreqDist
+import torch
+from transformers import T5Tokenizer, T5ForConditionalGeneration, T5Config
 
 # GROQ AI Import
 from groq import Groq
@@ -13,63 +9,52 @@ from authtoken import groq_token, folder_path # authtoken and folder_path are un
 
 # Set the Groq API key
 os.environ['GROQ_API_KEY'] = groq_token 
+
 # Specify the folder path
 folder_path = folder_path
-
-# Initialize NLTK stopwords and tokenizer
-nltk.download('stopwords')
-nltk.download('punkt')
-stop_words = set(stopwords.words('english'))
-
-# Summarization Function
-def nltk_summarize(text):
-    sentences = sent_tokenize(text)
-    words = []
-    for sentence in sentences:
-        words.extend(word_tokenize(sentence.lower()))
-    words = [word.lower() for word in words if word.isalnum() and word not in stop_words]
-
-    freq_dist = FreqDist(words)
-    most_freq_words = freq_dist.most_common(50)
-    summary = [word[0] for word in most_freq_words]
 
 # Initialize the Groq client
 client = Groq(
     api_key=os.environ.get('GROQ_API_KEY'),
 )
 
+# load model and tokenizer
+model = T5ForConditionalGeneration.from_pretrained('t5-large')
+tokenizer = T5Tokenizer.from_pretrained('t5-large', legacy = False)
+device = torch.device('cpu')
+
 # Dictionary to hold the key points for each text file
 key_points_dict = {}
 
 # Loop through each file in the folder
 for filename in os.listdir(folder_path):
-    # Check if the file is a text file
     if filename.endswith('.txt'):
         file_path = os.path.join(folder_path, filename)
-        # Open and read the file with utf-8 encoding
         with open(file_path, 'r', encoding='utf-8') as file:
             content = file.read()
+            
+            preprocessed_text = content.strip().replace('\n', '')
+            input_text = 'summarize: ' + preprocessed_text
+            tokenized_text = tokenizer.encode(input_text, return_tensors = 'pt', truncation = True, max_length = 512). to(device)
+            summary_ids = model.generate(tokenized_text, min_length = 40, max_length = 150, length_penalty = 2.0, num_beams = 4, early_stopping = True)
+            summary = tokenizer.decode(summary_ids[0], skip_special_tokens = True)
 
-            # Summarize articles using NLTK NLP
-            summarized_content = nltk_summarize(content)
+            print(f'Summary for {filename}: \n{summary}\n')
 
-            # Use Groq API to identify key points
             chat_completion = client.chat.completions.create(
                 messages=[
                     {
                         "role": "user",
-                        "content": f"Create a bulleted list of key points based on the summarized content: {summarized_content}",
+                        "content": f"Provide a bulleted list of key points: {content}",
                     }
                 ],
                 model="llama3-8b-8192",
             )
-
             # Get the summarized content
-            key_points = chat_completion.choices[0].message.content
+            bulleted_content = chat_completion.choices[0].message.content
             
             # Save the key points in the dictionary
-            key_points_dict[filename] = key_points
-
+            key_points_dict[filename] = bulleted_content
 # Save the key points dictionary to a JSON file in the same directory
 json_file_path = os.path.join(folder_path, 'key_points.json')
 with open(json_file_path, 'w', encoding='utf-8') as json_file:
