@@ -23,8 +23,9 @@ model = T5ForConditionalGeneration.from_pretrained('t5-large')
 tokenizer = T5Tokenizer.from_pretrained('t5-large', legacy = False)
 device = torch.device('cpu')
 
-# Dictionary to hold the key points for each text file
+# Dictionary to hold the summaries and key points for each text file
 key_points_dict = {}
+description_dict = {}
 
 # Loop through each file in the folder
 for filename in os.listdir(folder_path):
@@ -45,7 +46,7 @@ for filename in os.listdir(folder_path):
                 messages=[
                     {
                         "role": "user",
-                        "content": f"Provide a bulleted list of key points: {content}",
+                        "content": f"Provide only a bulleted list of key points: {content}",
                     }
                 ],
                 model="llama3-8b-8192",
@@ -55,8 +56,25 @@ for filename in os.listdir(folder_path):
             
             # Save the key points in the dictionary
             key_points_dict[filename] = bulleted_content
-            
-# Save the key points dictionary to a JSON file in the same directory
+
+            description_completion = client.chat.completions.create(
+                messages = [
+                    {
+                        "role": "user",
+                    "content": f"Provide ONLY a 3-word description of the following text: {content}",
+                    }
+                ],
+                model = "llama3-8b-8192",
+            )
+            descriptions = description_completion.choices[0].message.content
+            description_dict[filename] = descriptions
+
+
+# Save the summaries and key points dictionary to a JSON file in the same directory
 json_file_path = os.path.join(folder_path, 'key_points.json')
 with open(json_file_path, 'w', encoding='utf-8') as json_file:
     json.dump(key_points_dict, json_file, ensure_ascii=False, indent=4)
+
+descriptions_json_file_path = os.path.join(folder_path, 'descriptions.json')
+with open(descriptions_json_file_path, 'w', encoding = 'utf-8') as descriptions_json_file:
+    json.dump(description_dict, descriptions_json_file, ensure_ascii = False, indent = 4)
