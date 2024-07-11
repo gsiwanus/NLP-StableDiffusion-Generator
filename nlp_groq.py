@@ -67,6 +67,8 @@ for filename in os.listdir(folder_path):
                 model = "llama3-8b-8192",
             )
             descriptions = description_completion.choices[0].message.content
+            if "description of the text:" in descriptions:
+                descriptions = descriptions.split("description of the text:")[1].strip().strip('"')
             description_dict[filename] = descriptions
 
 
