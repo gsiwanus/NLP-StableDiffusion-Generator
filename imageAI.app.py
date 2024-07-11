@@ -15,9 +15,9 @@ import os
 folder_path = folder_path
 
 # Load key points from JSON file
-json_file_path = os.path.join(folder_path, 'key_points.json')
+json_file_path = os.path.join(folder_path, 'descriptions.json')
 with open(json_file_path, 'r', encoding='utf-8') as json_file:
-    key_points_dict = json.load(json_file)
+    descriptions_dict = json.load(json_file)
 
 # Initialize app
 app = tk.Tk()
@@ -27,7 +27,7 @@ ctk.set_appearance_mode("dark")
 
 # Dropdown menu initialization
 selected_file = tk.StringVar()
-file_dropdown = ttk.Combobox(app, textvariable=selected_file, values=list(key_points_dict.keys()), height=40, font=("Arial", 12))
+file_dropdown = ttk.Combobox(app, textvariable=selected_file, values=list(descriptions_dict.keys()), height=40, font=("Arial", 12))
 file_dropdown.place(x=10, y=10)
 
 # Image configuration
@@ -52,10 +52,10 @@ pipe.to(accelerator.device)
 
 def generate():
     filename = selected_file.get()
-    if filename not in key_points_dict:
+    if filename not in descriptions_dict:
         return
-    key_points = key_points_dict[filename]
-    prompt_text = f"Create a pictograph using the provided keypoints; do not include words in the image: {key_points}"
+    descriptions = descriptions_dict[filename]
+    prompt_text = f"An image representing the provided description: {descriptions}"
 
     def run_generation():
         num_inference_steps = 25
