@@ -6,6 +6,7 @@ from PIL import Image, ImageTk
 from authtoken import auth_token, folder_path # authtoken and folder_path are unique to your API Keys and local directories
 import torch
 from diffusers import StableDiffusionPipeline
+from tomesd import apply_patch
 import threading
 from accelerate import Accelerator
 import json
@@ -49,6 +50,8 @@ pipe = StableDiffusionPipeline.from_pretrained(model_id, use_auth_token=auth_tok
 if device == "cuda":
     pipe.enable_xformers_memory_efficient_attention()
 pipe.to(accelerator.device)
+
+apply_patch(pipe.unet)
 
 def generate():
     filename = selected_file.get()
