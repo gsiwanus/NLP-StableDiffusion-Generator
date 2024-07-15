@@ -61,14 +61,13 @@ for filename in os.listdir(folder_path):
                 messages = [
                     {
                         "role": "user",
-                    "content": f"Provide ONLY a 3-word description of the following text: {content}",
+                        "content": f"Provide ONLY a 3-word description using concrete, visual words that can be easily turned into images of the following text: {content}",
                     }
                 ],
                 model = "llama3-8b-8192",
             )
-            descriptions = description_completion.choices[0].message.content
-            if "description of the text:" in descriptions:
-                descriptions = descriptions.split("description of the text:")[1].strip().strip('"')
+            descriptions = description_completion.choices[0].message.content.strip()
+            descriptions = ' '.join(descriptions.split()[-3:])
             description_dict[filename] = descriptions
 
 
