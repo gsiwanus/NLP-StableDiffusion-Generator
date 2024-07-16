@@ -66,9 +66,9 @@ for filename in os.listdir(folder_path):
                 ],
                 model = "llama3-8b-8192",
             )
-            descriptions = description_completion.choices[0].message.content.strip()
-            descriptions = ' '.join(descriptions.split()[-3:])
-            description_dict[filename] = descriptions
+            descriptions = description_completion.choices[0].message.content
+            description = descriptions.split(':', 1)[-1].strip()
+            description_dict[filename] = description
 
 
 # Save the summaries and key points dictionary to a JSON file in the same directory
