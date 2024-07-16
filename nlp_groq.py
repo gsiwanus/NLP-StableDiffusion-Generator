@@ -61,7 +61,7 @@ for filename in os.listdir(folder_path):
                 messages = [
                     {
                         "role": "user",
-                        "content": f"Provide ONLY a 3-word description using concrete, visual words that can be easily turned into images of the following text: {content}",
+                        "content": f"Provide ONLY a 3-word description using concrete, visual words for the following text: {content}",
                     }
                 ],
                 model = "llama3-8b-8192",
