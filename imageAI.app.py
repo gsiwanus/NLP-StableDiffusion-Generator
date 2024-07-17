@@ -7,6 +7,7 @@ from authtoken import auth_token, folder_path # authtoken and folder_path are un
 import torch
 from diffusers import StableDiffusionPipeline
 from tomesd import apply_patch
+import xformers
 import threading
 from accelerate import Accelerator
 import json
