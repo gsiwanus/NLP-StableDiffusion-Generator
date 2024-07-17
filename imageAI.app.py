@@ -81,7 +81,9 @@ def generate():
             lmain.image = img
 
         # Generate the image with intermediate steps and callback
-        pipe(prompt_text, num_inference_steps=num_inference_steps, guidance_scale=guidance_scale, callback=callback, callback_steps=1).images[0]
+        result_image = pipe(prompt_text, num_inference_steps=num_inference_steps, guidance_scale=guidance_scale, callback=callback, callback_steps=1).images[0]
+        save_path = os.path.join(folder_path, f"{filename}_generated.png")
+        result_image.save(save_path)
 
     threading.Thread(target=run_generation).start()
 
