@@ -1,10 +1,9 @@
-# Import dependencies
 import tkinter as tk
 from tkinter import ttk
 import customtkinter as ctk
 from PIL import Image, ImageTk, ImageDraw, ImageFont
 import textwrap
-from authtoken import auth_token, folder_path # authtoken and folder_path are unique to your API Keys and local directories
+from authtoken import auth_token, folder_path
 import torch
 from diffusers import StableDiffusionPipeline
 from tomesd import apply_patch
@@ -28,7 +27,7 @@ with open(key_points_file_path, 'r', encoding='utf-8') as json_file:
 
 # Initialize app
 app = tk.Tk()
-app.geometry("532x622")
+app.geometry("532x700")  # Increased height to accommodate caption
 app.title('Stable Diffusion Test')
 ctk.set_appearance_mode("dark")
 
@@ -49,7 +48,7 @@ progress.place(x=10, y=110)
 # Setup accelerator
 accelerator = Accelerator()
 
-# Load model without torch_dtype=torch.float16
+# Load model
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model_id = "runwayml/stable-diffusion-v1-5"
 pipe = StableDiffusionPipeline.from_pretrained(model_id, use_auth_token=auth_token)
@@ -60,26 +59,36 @@ pipe.to(accelerator.device)
 apply_patch(pipe.unet)
 
 def image_caption(image, caption):
-    draw = ImageDraw.Draw(image)
+    # Define font and padding
     font = ImageFont.truetype("arial.ttf", 15)
     padding = 10
-    max_width = image.width - 2 * padding
+
+    # Calculate required width and height for the caption box
+    lines = caption.split("•")[1:]
     wrapped_lines = []
+    for line in lines:
+        wrapped_lines.extend(textwrap.wrap(f"• {line.strip()}", width=50))
 
     bbox = font.getbbox('A')
     text_height = bbox[3] - bbox[1] + 5
-    rec_height = (len(wrapped_lines) * text_height)
-    draw.rectangle([0, image.height - rec_height, image.width, image.height], fill = "black")
+    rec_height = (len(wrapped_lines) * text_height) + (2 * padding)
 
-    lines = caption.split("•")[1:]
-    for line in lines:
-        wrapped_lines.extend(textwrap.wrap(f"• {line.strip()}", width = 50))
-    
-    for i, wrapped_line in enumerate(wrapped_lines):
-        y_position = image.height - rec_height + padding + (i * text_height)
-        draw.text((padding, y_position), wrapped_line, font = font, fill = (255, 255, 255))
-    
-    return image
+    # Create a new image with enough height for the caption
+    total_height = image.height + rec_height
+    new_image = Image.new('RGB', (image.width, total_height), color='white')
+    new_image.paste(image, (0, 0))
+
+    # Draw the black rectangle for the caption
+    draw = ImageDraw.Draw(new_image)
+    draw.rectangle([0, image.height, image.width, total_height], fill="black")
+
+    # Draw the wrapped text on the black rectangle
+    y_position = image.height + padding
+    for line in wrapped_lines:
+        draw.text((padding, y_position), line, font=font, fill=(255, 255, 255))
+        y_position += text_height
+
+    return new_image
 
 def generate():
     filename = selected_file.get()
@@ -93,7 +102,6 @@ def generate():
     def run_generation():
         num_inference_steps = 25
         guidance_scale = 8.5
-        intermediate_images = []
 
         def callback(step, timestep, latents):
             # Update progress bar
@@ -104,18 +112,19 @@ def generate():
             with torch.no_grad():
                 images = pipe.decode_latents(latents)
             image = pipe.numpy_to_pil(images)[0]
-            intermediate_images.append(image)
-            ctk_img = ctk.CTkImage(light_image = image, dark_image = image, size = (512, 512))
+            ctk_img = ctk.CTkImage(light_image=image, dark_image=image, size=(512, 512))
             lmain.configure(image=ctk_img)
             lmain.image = ctk_img
 
         # Generate the image with intermediate steps and callback
         result_image = pipe(prompt_text, num_inference_steps=num_inference_steps, guidance_scale=guidance_scale, callback=callback, callback_steps=1).images[0]
         result_image = image_caption(result_image, key_points)
+
         save_path = os.path.join(folder_path, f"{filename}_generated.png")
         result_image.save(save_path)
-        ctk_img = ctk.CTkImage(light_image = result_image, dark_image = result_image, size = (512, 512))
-        lmain.configure(image = ctk_img)
+        
+        ctk_img = ctk.CTkImage(light_image=result_image, dark_image=result_image, size=(512, result_image.height))
+        lmain.configure(image=ctk_img)
         lmain.image = ctk_img
 
     threading.Thread(target=run_generation).start()
