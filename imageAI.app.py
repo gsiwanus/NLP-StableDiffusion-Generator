@@ -62,18 +62,22 @@ apply_patch(pipe.unet)
 def image_caption(image, caption):
     draw = ImageDraw.Draw(image)
     font = ImageFont.truetype("arial.ttf", 15)
-    max_width = image.width - 20
-    lines = caption.split("•")[1:]
+    padding = 10
+    max_width = image.width - 2 * padding
     wrapped_lines = []
 
+    bbox = font.getbbox('A')
+    text_height = bbox[3] - bbox[1] + 5
+    rec_height = (len(wrapped_lines) * text_height)
+    draw.rectangle([0, image.height - rec_height, image.width, image.height], fill = "black")
+
+    lines = caption.split("•")[1:]
     for line in lines:
         wrapped_lines.extend(textwrap.wrap(f"• {line.strip()}", width = 50))
     
-    bbox = font.getbbox('A')
-    max_height = bbox[3] - bbox[1] + 5
     for i, wrapped_line in enumerate(wrapped_lines):
-        y_position = i * max_height
-        draw.text((10, y_position), wrapped_line, font = font, fill = (255, 255, 255, 128))
+        y_position = image.height - rec_height + padding + (i * text_height)
+        draw.text((padding, y_position), wrapped_line, font = font, fill = (255, 255, 255))
     
     return image
 
