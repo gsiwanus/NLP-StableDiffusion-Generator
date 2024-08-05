@@ -28,11 +28,18 @@ client = Groq(
 ) '''
 
 def generate_key_points(text, model, tokenizer, device):
-    input_text = 'summarize: ' + text + 'in bullet points'
+    input_text = 'summarize: ' + text + ' in bullet points'
     tokenized_text = tokenizer.encode(input_text, return_tenors = 'pt', truncation = True, max_length = 512). to(device)
     summary_ids = model.generate(tokenized_text, min_length = 40, max_length = 150, length_penalty = 2.0, num_beams = 4, early_stopping = True)
     key_points = tokenizer.decode(summary_ids[0], skip_special_tokens = True)
     return key_points
+
+def generate_description(text, model, tokenizer, device):
+    input_text = 'summarize: ' + text + ' in three words'
+    tokenized_text = tokenizer.encode(input_text, return_tensors= 'pt', truncation = True, max_length = 512).to(device)
+    summary_ids = model.generate(tokenized_text, min_length = 40, max_length = 150, length_penalty = 2.0, num_beams = 4, early_stopping = True)
+    description = tokenizer.decode(summary_ids[0], skip_special_tokens = True)
+    return description 
 
 # Loop through each file in the folder
 for filename in os.listdir(folder_path):
