@@ -16,9 +16,9 @@ import os
 # Specify the folder path (same as in the summarization script)
 folder_path = folder_path
 
-# Load descriptions from JSON file
-json_file_path = os.path.join(folder_path, 'descriptions.json')
-with open(json_file_path, 'r', encoding='utf-8') as json_file:
+# Load descriptions and summaries from JSON files
+descriptions_file_path = os.path.join(folder_path, 'descriptions.json')
+with open(descriptions_file_path, 'r', encoding='utf-8') as json_file:
     descriptions_dict = json.load(json_file)
 
 summaries_file_path = os.path.join(folder_path, 'summaries.json')
@@ -64,10 +64,7 @@ def image_caption(image, caption):
     padding = 10
 
     # Calculate required width and height for the caption box
-    lines = caption.split("•")[1:]
-    wrapped_lines = []
-    for line in lines:
-        wrapped_lines.extend(textwrap.wrap(f"• {line.strip()}", width=50))
+    wrapped_lines = textwrap.wrap(caption, width=50)
 
     bbox = font.getbbox('A')
     text_height = bbox[3] - bbox[1] + 5
@@ -92,12 +89,12 @@ def image_caption(image, caption):
 
 def generate():
     filename = selected_file.get()
-    if filename not in descriptions_dict or filename not in summaries_dict:
+    if filename not in summaries_dict:
         return
     
-    descriptions = descriptions_dict[filename]
-    summaries = summaries_dict[filename]
-    prompt_text = f"An image representing the provided description: {descriptions}"
+    # Get summary as caption
+    summary = summaries_dict[filename]
+    prompt_text = f"An image representing the provided description: {descriptions_dict.get(filename, 'No description')}"
 
     def run_generation():
         num_inference_steps = 25
@@ -118,7 +115,7 @@ def generate():
 
         # Generate the image with intermediate steps and callback
         result_image = pipe(prompt_text, num_inference_steps=num_inference_steps, guidance_scale=guidance_scale, callback=callback, callback_steps=1).images[0]
-        result_image = image_caption(result_image, summaries)
+        result_image = image_caption(result_image, summary)
 
         save_path = os.path.join(folder_path, f"{filename}_generated.png")
         result_image.save(save_path)
