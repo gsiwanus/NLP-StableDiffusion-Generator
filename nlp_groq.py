@@ -66,6 +66,10 @@ for filename in os.listdir(folder_path):
             description = generate_description(preprocessed_text, model, tokenizer, device)
             description_dict[filename] = description
 
+            print(f'Summary for {filename}: \n{summary}\n')
+            print(f'Key Points for {filename}: \n{key_points}\n')
+            print(f'Description for {filename}: \n{description}\n')
+
 # Save the summaries and key points dictionary to a JSON file in the same directory
 json_file_path = os.path.join(folder_path, 'key_points.json')
 with open(json_file_path, 'w', encoding='utf-8') as json_file:
