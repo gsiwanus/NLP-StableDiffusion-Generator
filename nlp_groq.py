@@ -16,6 +16,13 @@ description_dict = {}
 # Specify the folder path
 folder_path = folder_path
 
+def generate_summaries(text, model, tokenizer, device):
+    input_text = 'summarize: ' + text + ' in a paragraph'
+    tokenized_text = tokenizer.encode_plus(input_text, return_tensors = 'pt', truncation = True, max_length = 512).to(device)
+    summary_ids = model.generate(tokenized_text['input_ids'], min_length = 40, max_length = 150, length_penalty = 2.0, num_beams = 4, early_stopping = True)
+    summaries = tokenizer.decode(summary_ids[0], skip_special_tokens = True)
+    return summaries
+
 def generate_key_points(text, model, tokenizer, device):
     input_text = 'summarize: ' + text + ' in bullet points'
     tokenized_text = tokenizer.encode_plus(input_text, return_tensors = 'pt', truncation = True, max_length = 512).to(device)
