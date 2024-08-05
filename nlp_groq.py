@@ -56,7 +56,15 @@ for filename in os.listdir(folder_path):
 
             print(f'Summary for {filename}: \n{summary}\n')
 
-            chat_completion = client.chat.completions.create(
+            # Key Points Function Call
+            key_points = generate_key_points(preprocessed_text, model, tokenizer, device)
+            key_points_dict[filename] = key_points
+
+            # Description Function Call
+            description = generate_description(preprocessed_text, model, tokenizer, device)
+            description_dict[filename] = description
+
+            '''chat_completion = client.chat.completions.create(
                 messages=[
                     {
                         "role": "user",
@@ -82,7 +90,7 @@ for filename in os.listdir(folder_path):
             )
             descriptions = description_completion.choices[0].message.content
             description = descriptions.split(':', 1)[-1].strip()
-            description_dict[filename] = description
+            description_dict[filename] = description '''
 
 
 # Save the summaries and key points dictionary to a JSON file in the same directory
