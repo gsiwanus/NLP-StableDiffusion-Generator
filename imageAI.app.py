@@ -21,9 +21,9 @@ json_file_path = os.path.join(folder_path, 'descriptions.json')
 with open(json_file_path, 'r', encoding='utf-8') as json_file:
     descriptions_dict = json.load(json_file)
 
-key_points_file_path = os.path.join(folder_path, 'key_points.json')
-with open(key_points_file_path, 'r', encoding='utf-8') as json_file:
-    key_points_dict = json.load(json_file)
+summaries_file_path = os.path.join(folder_path, 'summaries.json')
+with open(summaries_file_path, 'r', encoding='utf-8') as json_file:
+    summaries_dict = json.load(json_file)
 
 # Initialize app
 app = tk.Tk()
@@ -92,11 +92,11 @@ def image_caption(image, caption):
 
 def generate():
     filename = selected_file.get()
-    if filename not in descriptions_dict or filename not in key_points_dict:
+    if filename not in descriptions_dict or filename not in summaries_dict:
         return
     
     descriptions = descriptions_dict[filename]
-    key_points = key_points_dict[filename]
+    summaries = summaries_dict[filename]
     prompt_text = f"An image representing the provided description: {descriptions}"
 
     def run_generation():
@@ -118,7 +118,7 @@ def generate():
 
         # Generate the image with intermediate steps and callback
         result_image = pipe(prompt_text, num_inference_steps=num_inference_steps, guidance_scale=guidance_scale, callback=callback, callback_steps=1).images[0]
-        result_image = image_caption(result_image, key_points)
+        result_image = image_caption(result_image, summaries)
 
         save_path = os.path.join(folder_path, f"{filename}_generated.png")
         result_image.save(save_path)
