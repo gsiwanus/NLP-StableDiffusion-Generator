@@ -71,9 +71,13 @@ for filename in os.listdir(folder_path):
             print(f'Description for {filename}: \n{description}\n')
 
 # Save the summaries and key points dictionary to a JSON file in the same directory
-json_file_path = os.path.join(folder_path, 'key_points.json')
-with open(json_file_path, 'w', encoding='utf-8') as json_file:
-    json.dump(key_points_dict, json_file, ensure_ascii=False, indent=4)
+summaries_json_file_path = os.path.join(folder_path, 'summaries.json')
+with open(summaries_json_file_path, 'w', encoding = 'utf-8') as summaries_json_file:
+    json.dump(summaries_dict, summaries_json_file, ensure_ascii = False, indent = 4)
+
+key_points_json_file_path = os.path.join(folder_path, 'key_points.json')
+with open(key_points_json_file_path, 'w', encoding='utf-8') as key_points_json_file:
+    json.dump(key_points_dict, key_points_json_file, ensure_ascii=False, indent = 4)
 
 descriptions_json_file_path = os.path.join(folder_path, 'descriptions.json')
 with open(descriptions_json_file_path, 'w', encoding = 'utf-8') as descriptions_json_file:
