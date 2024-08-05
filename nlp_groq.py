@@ -2,13 +2,7 @@ import os
 import json
 import torch
 from transformers import T5Tokenizer, T5ForConditionalGeneration, T5Config
-from authtoken import folder_path # authtoken and folder_path are unique to your API Keys and local directories
-
-''' # GROQ AI Import
-from groq import Groq
-
-# Set the Groq API key
-os.environ['GROQ_API_KEY'] = groq_token '''
+from authtoken import folder_path # folder_path is unique to your local directory
 
 # load model and tokenizer
 model = T5ForConditionalGeneration.from_pretrained('t5-large')
@@ -22,21 +16,16 @@ description_dict = {}
 # Specify the folder path
 folder_path = folder_path
 
-''' # Initialize the Groq client
-client = Groq(
-    api_key=os.environ.get('GROQ_API_KEY'),
-) '''
-
 def generate_key_points(text, model, tokenizer, device):
     input_text = 'summarize: ' + text + ' in bullet points'
-    tokenized_text = tokenizer.encode(input_text, return_tenors = 'pt', truncation = True, max_length = 512). to(device)
+    tokenized_text = tokenizer.encod_plus(input_text, return_tenors = 'pt', truncation = True, max_length = 512).to(device)
     summary_ids = model.generate(tokenized_text, min_length = 40, max_length = 150, length_penalty = 2.0, num_beams = 4, early_stopping = True)
     key_points = tokenizer.decode(summary_ids[0], skip_special_tokens = True)
     return key_points
 
 def generate_description(text, model, tokenizer, device):
     input_text = 'summarize: ' + text + ' in three words'
-    tokenized_text = tokenizer.encode(input_text, return_tensors= 'pt', truncation = True, max_length = 512).to(device)
+    tokenized_text = tokenizer.encode_plus(input_text, return_tensors= 'pt', truncation = True, max_length = 512).to(device)
     summary_ids = model.generate(tokenized_text, min_length = 40, max_length = 150, length_penalty = 2.0, num_beams = 4, early_stopping = True)
     description = tokenizer.decode(summary_ids[0], skip_special_tokens = True)
     return description 
@@ -50,8 +39,8 @@ for filename in os.listdir(folder_path):
             
             preprocessed_text = content.strip().replace('\n', '')
             input_text = 'summarize: ' + preprocessed_text
-            tokenized_text = tokenizer.encode(input_text, return_tensors = 'pt', truncation = True, max_length = 512). to(device)
-            summary_ids = model.generate(tokenized_text, min_length = 40, max_length = 150, length_penalty = 2.0, num_beams = 4, early_stopping = True)
+            tokenized_text = tokenizer.encode_plus(input_text, return_tensors = 'pt', truncation = True, max_length = 512). to(device)
+            summary_ids = model.generate(tokenized_text, min_length = 3, max_length = 10, length_penalty = 2.0, num_beams = 4, early_stopping = True)
             summary = tokenizer.decode(summary_ids[0], skip_special_tokens = True)
 
             print(f'Summary for {filename}: \n{summary}\n')
@@ -63,35 +52,6 @@ for filename in os.listdir(folder_path):
             # Description Function Call
             description = generate_description(preprocessed_text, model, tokenizer, device)
             description_dict[filename] = description
-
-            '''chat_completion = client.chat.completions.create(
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"Provide only a bulleted list of key points: {content}",
-                    }
-                ],
-                model="llama3-8b-8192",
-            )
-            # Get the bulleted list of key points
-            bulleted_content = chat_completion.choices[0].message.content
-            
-            # Save the key points in the dictionary
-            key_points_dict[filename] = bulleted_content
-
-            description_completion = client.chat.completions.create(
-                messages = [
-                    {
-                        "role": "user",
-                        "content": f"Provide ONLY a 3-word description using concrete, visual objects for the following text: {content}",
-                    }
-                ],
-                model = "llama3-8b-8192",
-            )
-            descriptions = description_completion.choices[0].message.content
-            description = descriptions.split(':', 1)[-1].strip()
-            description_dict[filename] = description '''
-
 
 # Save the summaries and key points dictionary to a JSON file in the same directory
 json_file_path = os.path.join(folder_path, 'key_points.json')
