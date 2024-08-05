@@ -10,6 +10,7 @@ tokenizer = T5Tokenizer.from_pretrained('t5-large', legacy = False)
 device = torch.device('cpu')
 
 # Dictionary to hold the summaries and key points for each text file
+summaries_dict = {}
 key_points_dict = {}
 description_dict = {}
 
@@ -17,11 +18,11 @@ description_dict = {}
 folder_path = folder_path
 
 def generate_summaries(text, model, tokenizer, device):
-    input_text = 'summarize: ' + text + ' in a paragraph'
+    input_text = 'summarize: ' + text
     tokenized_text = tokenizer.encode_plus(input_text, return_tensors = 'pt', truncation = True, max_length = 512).to(device)
     summary_ids = model.generate(tokenized_text['input_ids'], min_length = 40, max_length = 150, length_penalty = 2.0, num_beams = 4, early_stopping = True)
-    summaries = tokenizer.decode(summary_ids[0], skip_special_tokens = True)
-    return summaries
+    summary = tokenizer.decode(summary_ids[0], skip_special_tokens = True)
+    return summary
 
 def generate_key_points(text, model, tokenizer, device):
     input_text = 'summarize: ' + text + ' in bullet points'
@@ -45,12 +46,17 @@ for filename in os.listdir(folder_path):
             content = file.read()
             
             preprocessed_text = content.strip().replace('\n', '')
-            input_text = 'summarize: ' + preprocessed_text
+
+            ''' input_text = 'summarize: ' + preprocessed_text
             tokenized_text = tokenizer.encode_plus(input_text, return_tensors = 'pt', truncation = True, max_length = 512). to(device)
             summary_ids = model.generate(tokenized_text['input_ids'], min_length = 3, max_length = 10, length_penalty = 2.0, num_beams = 4, early_stopping = True)
             summary = tokenizer.decode(summary_ids[0], skip_special_tokens = True)
 
-            print(f'Summary for {filename}: \n{summary}\n')
+            print(f'Summary for {filename}: \n{summary}\n') '''
+
+            # Summary Function Call
+            summary = generate_summaries(preprocessed_text, model, tokenizer, device)
+            summaries_dict[filename] = summary
 
             # Key Points Function Call
             key_points = generate_key_points(preprocessed_text, model, tokenizer, device)
