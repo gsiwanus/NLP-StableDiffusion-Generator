@@ -2,21 +2,13 @@ import os
 import json
 import torch
 from transformers import T5Tokenizer, T5ForConditionalGeneration, T5Config
+from authtoken import folder_path # authtoken and folder_path are unique to your API Keys and local directories
 
-# GROQ AI Import
+''' # GROQ AI Import
 from groq import Groq
-from authtoken import groq_token, folder_path # authtoken and folder_path are unique to your API Keys and local directories
 
 # Set the Groq API key
-os.environ['GROQ_API_KEY'] = groq_token 
-
-# Specify the folder path
-folder_path = folder_path
-
-# Initialize the Groq client
-client = Groq(
-    api_key=os.environ.get('GROQ_API_KEY'),
-)
+os.environ['GROQ_API_KEY'] = groq_token '''
 
 # load model and tokenizer
 model = T5ForConditionalGeneration.from_pretrained('t5-large')
@@ -26,6 +18,21 @@ device = torch.device('cpu')
 # Dictionary to hold the summaries and key points for each text file
 key_points_dict = {}
 description_dict = {}
+
+# Specify the folder path
+folder_path = folder_path
+
+''' # Initialize the Groq client
+client = Groq(
+    api_key=os.environ.get('GROQ_API_KEY'),
+) '''
+
+def generate_key_points(text, model, tokenizer, device):
+    input_text = 'summarize: ' + text + 'in bullet points'
+    tokenized_text = tokenizer.encode(input_text, return_tenors = 'pt', truncation = True, max_length = 512). to(device)
+    summary_ids = model.generate(tokenized_text, min_length = 40, max_length = 150, length_penalty = 2.0, num_beams = 4, early_stopping = True)
+    key_points = tokenizer.decode(summary_ids[0], skip_special_tokens = True)
+    return key_points
 
 # Loop through each file in the folder
 for filename in os.listdir(folder_path):
